@@ -1,0 +1,32 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/silver-train
+    docker:
+      - image: circleci/node:8.11-browsers
+        environment:
+          CHROME_BIN: "/usr/bin/google-chrome"
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "yarn.lock" }}
+      - run:
+          name: install-dependencies
+          command: yarn install
+      - save_cache:
+          key: dependency-cache-{{ checksum "yarn.lock" }}
+          paths:
+            - ~/.cache/yarn
+            - ./node_modules
+      - run:
+          name: Install Angular CLI
+          command: sudo npm install -g @angular/cli@latest
+      - run:
+          name: test
+          command: ng test --code-coverage --watch=false
+      - run:
+          name: e2e
+          command: ng e2e
+      - run:
+          name: build
+          command: ng build --prod
